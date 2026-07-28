@@ -71,16 +71,11 @@ def _recurrence_loop(
     return all_s, all_R
 
 
-# Try to compile the recurrence for massive speedup on GPU
-# Only compile on CUDA — on CPU the eager loop is fine
+# torch.compile is disabled by default because the sequential recurrence
+# loop with DataParallel causes issues with CUDA Graphs and inductor.
+# The recurrence is inherently sequential (g_t depends on S_{t-1}).
+# For GPU speedup, use shorter seq_len or a custom Triton kernel.
 _compiled_recurrence = _recurrence_loop
-if torch.cuda.is_available():
-    try:
-        _compiled_recurrence = torch.compile(
-            _recurrence_loop, mode="default", fullgraph=False
-        )
-    except Exception:
-        _compiled_recurrence = _recurrence_loop
 
 
 class USNBlock(nn.Module):

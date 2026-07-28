@@ -48,12 +48,12 @@ NUM_GPUS = max(torch.cuda.device_count(), 1)
 tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token
 VOCAB_SIZE = tokenizer.vocab_size  # 50257
-SEQ_LEN = 128  # Short sequences for fast sequential loop on GPU
-BATCH_SIZE = 16 * NUM_GPUS  # Larger batch compensates shorter seq
+SEQ_LEN = 64   # Short for fast sequential recurrence
+BATCH_SIZE = 32 * NUM_GPUS  # Large batch compensates short seq
 
-# USN model sized for T4 memory (~180M params)
+# USN model sized for T4 memory (~120M params)
 config = USNConfig(
-    num_layers=12,       # Reduced for speed
+    num_layers=8,        # Fewer layers = faster sequential loop
     d_model=768,
     d_s=512,             # Semantic state
     k=16,                # Relational 16x16=256
@@ -66,7 +66,7 @@ config = USNConfig(
     residual_dropout=0.1,
     embedding_dropout=0.0,
     tie_weights=True,
-    fused=True,  # Enable fused kernels (falls back gracefully if unavailable)
+    fused=False,         # Disable fused kernels to avoid compile overhead
     chunk_size=64,
 )
 
