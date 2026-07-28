@@ -7,9 +7,9 @@ across all test modules. Import fixtures by name in test functions.
 import pytest
 import torch
 
+from usn.config.generation_config import USNGenerationConfig
 from usn.config.model_config import USNConfig
 from usn.config.training_config import USNTrainingConfig
-from usn.config.generation_config import USNGenerationConfig
 
 
 @pytest.fixture
@@ -35,6 +35,7 @@ def tiny_config() -> USNConfig:
 def tiny_model(tiny_config):
     """Tiny USN model for fast testing."""
     from usn.models.usn_model import USNModel
+
     model = USNModel(tiny_config)
     model.eval()
     return model

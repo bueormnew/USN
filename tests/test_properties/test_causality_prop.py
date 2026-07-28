@@ -20,9 +20,17 @@ from usn.models.usn_model import USNModel
 def causal_config():
     """Minimal config for causality testing."""
     return USNConfig(
-        num_layers=2, d_model=32, d_s=16, k=4, d_ff=64,
-        vocab_size=50, max_seq_len=16, dropout=0.0,
-        embedding_dropout=0.0, residual_dropout=0.0, fused=False,
+        num_layers=2,
+        d_model=32,
+        d_s=16,
+        k=4,
+        d_ff=64,
+        vocab_size=50,
+        max_seq_len=16,
+        dropout=0.0,
+        embedding_dropout=0.0,
+        residual_dropout=0.0,
+        fused=False,
     )
 
 

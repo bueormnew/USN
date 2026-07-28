@@ -8,7 +8,7 @@ Defines the fundamental data structures used throughout the library:
 - AffineTransition: parameters for associative scan
 """
 
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 import torch
 from torch import Tensor
@@ -25,7 +25,7 @@ class UnifiedState(NamedTuple):
 
     semantic: Tensor
     relational: Tensor
-    u_prev: Optional[Tensor] = None
+    u_prev: Tensor | None = None
 
 
 class ModelState(NamedTuple):

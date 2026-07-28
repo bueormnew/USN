@@ -1,5 +1,7 @@
 """Property 10: Log-Space Numerical Stability."""
+
 import torch
+
 from usn.layers.parallel_scan import parallel_scan_semantic
 
 

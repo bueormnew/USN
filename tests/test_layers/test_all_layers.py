@@ -1,21 +1,29 @@
 """Unit tests for USN layers: USNBlock, ParallelScan, ChunkedParallelScan, norms."""
 
-import torch
 import pytest
+import torch
 
 from usn.config.model_config import USNConfig
 from usn.layers.block import USNBlock
-from usn.layers.parallel_scan import parallel_scan_semantic, ParallelScanFunction
 from usn.layers.chunked_scan import ChunkedParallelScan
 from usn.layers.norm import RMSNorm, USNLayerNorm
+from usn.layers.parallel_scan import ParallelScanFunction, parallel_scan_semantic
 
 
 @pytest.fixture
 def block_config():
     return USNConfig(
-        num_layers=1, d_model=32, d_s=16, k=4, d_ff=64,
-        vocab_size=50, max_seq_len=32, dropout=0.0,
-        embedding_dropout=0.0, residual_dropout=0.0, fused=False,
+        num_layers=1,
+        d_model=32,
+        d_s=16,
+        k=4,
+        d_ff=64,
+        vocab_size=50,
+        max_seq_len=32,
+        dropout=0.0,
+        embedding_dropout=0.0,
+        residual_dropout=0.0,
+        fused=False,
     )
 
 
@@ -27,8 +35,14 @@ class TestUSNBlock:
         """Verify block contains all 8 submodules in correct order."""
         block = USNBlock(block_config, layer_idx=0)
         expected = [
-            "norm", "input_proj", "temporal_mix", "exp_gate",
-            "selective_write", "state_update", "state_readout", "channel_mix",
+            "norm",
+            "input_proj",
+            "temporal_mix",
+            "exp_gate",
+            "selective_write",
+            "state_update",
+            "state_readout",
+            "channel_mix",
         ]
         named = [name for name, _ in block.named_children()]
         # All expected submodules present (residual_dropout is extra)

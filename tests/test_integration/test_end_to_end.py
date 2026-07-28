@@ -61,9 +61,7 @@ def test_create_train_save_load_generate():
         reader = USNReader()
         data = reader.load(str(path))
         loaded_model = USNModel(data["config"])
-        weights = {
-            k: v for k, v in data["weights"].items() if not k.startswith("__buffer__.")
-        }
+        weights = {k: v for k, v in data["weights"].items() if not k.startswith("__buffer__.")}
         loaded_model.load_state_dict(weights, strict=False)
 
         # Generate

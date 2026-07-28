@@ -1,5 +1,7 @@
 """Property 12: State Norm Constraint Enforcement."""
+
 import torch
+
 from usn.training.stability import clip_state_norm
 
 

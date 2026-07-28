@@ -9,14 +9,14 @@ within numerical tolerance for random inputs.
 """
 
 import torch
-from hypothesis import given, settings, HealthCheck
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from usn.backends.triton_kernels import (
-    eager_fused_projections,
-    optimized_fused_projections,
-    eager_temporal_gate,
     eager_channel_mlp,
+    eager_fused_projections,
+    eager_temporal_gate,
+    optimized_fused_projections,
 )
 
 

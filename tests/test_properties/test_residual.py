@@ -1,5 +1,7 @@
 """Property 9: Residual Connection preserved."""
+
 import torch
+
 from usn.config.model_config import USNConfig
 from usn.layers.block import USNBlock
 
@@ -7,8 +9,15 @@ from usn.layers.block import USNBlock
 def test_residual_adds_block_output_to_input():
     """Validates: Requirements 9 - Residual connection preserves input contribution."""
     config = USNConfig(
-        num_layers=1, d_model=32, d_s=16, k=4, d_ff=64,
-        vocab_size=50, fused=False, dropout=0.0, residual_dropout=0.0,
+        num_layers=1,
+        d_model=32,
+        d_s=16,
+        k=4,
+        d_ff=64,
+        vocab_size=50,
+        fused=False,
+        dropout=0.0,
+        residual_dropout=0.0,
     )
     block = USNBlock(config, layer_idx=0)
     block.eval()

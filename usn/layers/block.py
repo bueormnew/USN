@@ -124,9 +124,7 @@ class USNBlock(nn.Module):
         # PREVIOUS timestep. Therefore, g_t computation MUST be interleaved
         # with the state update loop — it cannot be computed independently
         # for all positions in advance.
-        all_s, all_R, final_state = self._fused_write_and_update(
-            m, lambda_t, rho_t, state, u_last
-        )
+        all_s, all_R, final_state = self._fused_write_and_update(m, lambda_t, rho_t, state, u_last)
 
         # 7. State Readout: o_t = c_t ⊙ z_t
         o_t, c_t, z_t = self.state_readout(all_s, all_R, m)
@@ -178,8 +176,8 @@ class USNBlock(nn.Module):
 
         # Pre-compute projections (these don't depend on state)
         write_semantic = self.state_update.B_s(m)  # (batch, seq, d_s)
-        left = self.state_update.B_r(m)            # (batch, seq, k)
-        right = self.state_update.C_r(m)           # (batch, seq, k)
+        left = self.state_update.B_r(m)  # (batch, seq, k)
+        right = self.state_update.C_r(m)  # (batch, seq, k)
         outer_products = left.unsqueeze(-1) * right.unsqueeze(-2)  # (batch, seq, k, k)
 
         # Pre-compute the input-dependent part of the gate: W_g m_t
@@ -190,8 +188,8 @@ class USNBlock(nn.Module):
         all_R = torch.empty(batch_size, seq_len, k, k, device=device, dtype=dtype)
 
         # Sequential loop: compute g_t from S_{t-1}, then update state
-        s_prev = initial_state.semantic      # (batch, d_s)
-        R_prev = initial_state.relational    # (batch, k, k)
+        s_prev = initial_state.semantic  # (batch, d_s)
+        R_prev = initial_state.relational  # (batch, k, k)
 
         for t in range(seq_len):
             # ── Selective Writing: g_t depends on S_{t-1} ──

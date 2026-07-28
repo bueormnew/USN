@@ -3,13 +3,13 @@
 import tempfile
 from pathlib import Path
 
-import torch
 import pytest
+import torch
 
 from usn.config import USNConfig
 from usn.models.usn_model import USNModel
-from usn.serialization.writer import USNWriter
 from usn.serialization.reader import USNReader
+from usn.serialization.writer import USNWriter
 
 
 class TestSerializationRoundTrip:
@@ -18,8 +18,15 @@ class TestSerializationRoundTrip:
     @pytest.fixture
     def tiny_cfg(self):
         return USNConfig(
-            num_layers=2, d_model=32, d_s=16, k=4, d_ff=64,
-            vocab_size=50, max_seq_len=16, tie_weights=False, fused=False,
+            num_layers=2,
+            d_model=32,
+            d_s=16,
+            k=4,
+            d_ff=64,
+            vocab_size=50,
+            max_seq_len=16,
+            tie_weights=False,
+            fused=False,
         )
 
     def test_round_trip_produces_identical_output(self, tiny_cfg):

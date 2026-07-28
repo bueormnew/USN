@@ -167,8 +167,8 @@ class TestTemporalMixing:
         u_prev = tm.u_prev_init.unsqueeze(0).unsqueeze(0)  # (1, 1, d_model)
         outputs = []
         for t in range(seq_len):
-            x_t = x_in[:, t:t+1, :]
-            u_t = u_in[:, t:t+1, :]
+            x_t = x_in[:, t : t + 1, :]
+            u_t = u_in[:, t : t + 1, :]
             m_t, u_last = tm(x_t, u_t, u_prev=u_prev)
             outputs.append(m_t)
             u_prev = u_last
@@ -346,10 +346,10 @@ class TestStateUpdate:
         state = None
         for t in range(seq_len):
             state = su.forward_sequential(
-                m[:, t:t+1, :],
-                lambda_t[:, t:t+1, :],
-                rho_t[:, t:t+1, :],
-                g_t[:, t:t+1, :],
+                m[:, t : t + 1, :],
+                lambda_t[:, t : t + 1, :],
+                rho_t[:, t : t + 1, :],
+                g_t[:, t : t + 1, :],
                 prev_state=state,
             )
             assert torch.allclose(all_s[:, t, :], state.semantic, atol=1e-5)

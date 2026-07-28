@@ -54,7 +54,6 @@ def test_temporal_mixing_gate_bounds(d_model: int, scale: float):
     We test that the gate stays within [eps, 1-eps] with a small tolerance,
     confirming sigmoid behavior is bounded and finite.
     """
-    eps = 1e-7
     tm = TemporalMixing(d_model)
     x = torch.randn(2, 4, d_model) * scale
     alpha = torch.sigmoid(tm.gate_proj(x))

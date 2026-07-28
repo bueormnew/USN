@@ -1,5 +1,7 @@
 """Scalability table verification: all presets produce valid models."""
+
 import pytest
+
 from usn.config.model_config import USNConfig
 from usn.models.usn_model import USNModel
 
@@ -20,14 +22,14 @@ def test_preset_model_instantiates(preset):
     cfg = USNConfig.from_preset(preset)
     model = USNModel(cfg)
     assert model.num_parameters > 0
-    assert model.state_size_per_layer == cfg.d_s + cfg.k ** 2
+    assert model.state_size_per_layer == cfg.d_s + cfg.k**2
 
 
 def test_scalability_table_state_formula():
     """Verify state size follows the formula: d_s + k²."""
     for preset in PRESETS:
         cfg = USNConfig.from_preset(preset)
-        expected = cfg.d_s + cfg.k ** 2
+        expected = cfg.d_s + cfg.k**2
         # Can verify without building model
         assert expected > 0
         assert expected == cfg.d_s + cfg.k * cfg.k

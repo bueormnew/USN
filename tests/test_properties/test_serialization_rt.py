@@ -77,7 +77,7 @@ def test_weight_count_invariance(preset):
     """
     config = USNConfig.from_preset(preset)
     model = USNModel(config)
-    assert model.state_size_per_layer == config.d_s + config.k ** 2
-    assert model.total_state_size == config.num_layers * (config.d_s + config.k ** 2)
+    assert model.state_size_per_layer == config.d_s + config.k**2
+    assert model.total_state_size == config.num_layers * (config.d_s + config.k**2)
     # Verify model has parameters (basic sanity)
     assert model.num_parameters > 0

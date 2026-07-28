@@ -1,5 +1,7 @@
 """Property 13: Deterministic Initialization."""
+
 import torch
+
 from usn.config.model_config import USNConfig
 from usn.models.usn_model import USNModel
 
@@ -7,8 +9,13 @@ from usn.models.usn_model import USNModel
 def test_same_seed_same_params():
     """Validates: Requirements 13 - Same seed produces identical parameters."""
     config = USNConfig(
-        num_layers=2, d_model=32, d_s=16, k=4, d_ff=64,
-        vocab_size=50, fused=False,
+        num_layers=2,
+        d_model=32,
+        d_s=16,
+        k=4,
+        d_ff=64,
+        vocab_size=50,
+        fused=False,
     )
     torch.manual_seed(42)
     m1 = USNModel(config)

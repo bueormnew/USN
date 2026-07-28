@@ -1,8 +1,8 @@
 """Unit tests for USNModel: forward/backward, state management, architecture."""
 
+import pytest
 import torch
 import torch.nn as nn
-import pytest
 
 from usn.config.model_config import USNConfig
 from usn.models.usn_model import USNModel
@@ -11,10 +11,18 @@ from usn.models.usn_model import USNModel
 @pytest.fixture
 def model_config():
     return USNConfig(
-        num_layers=2, d_model=32, d_s=16, k=4, d_ff=64,
-        vocab_size=100, max_seq_len=32, dropout=0.0,
-        embedding_dropout=0.0, residual_dropout=0.0,
-        tie_weights=True, fused=False,
+        num_layers=2,
+        d_model=32,
+        d_s=16,
+        k=4,
+        d_ff=64,
+        vocab_size=100,
+        max_seq_len=32,
+        dropout=0.0,
+        embedding_dropout=0.0,
+        residual_dropout=0.0,
+        tie_weights=True,
+        fused=False,
     )
 
 
@@ -56,7 +64,7 @@ class TestParameterCount:
 
     def test_state_size(self, model, model_config):
         """State size matches config: num_layers × (d_s + k²)."""
-        expected_per_layer = model_config.d_s + model_config.k ** 2
+        expected_per_layer = model_config.d_s + model_config.k**2
         assert model.state_size_per_layer == expected_per_layer
         assert model.total_state_size == model_config.num_layers * expected_per_layer
 
@@ -100,9 +108,7 @@ class TestArchitectureConstraints:
     def test_no_attention_ops(self, model):
         """Model contains no nn.MultiheadAttention modules."""
         for name, module in model.named_modules():
-            assert not isinstance(module, nn.MultiheadAttention), (
-                f"Found attention at {name}"
-            )
+            assert not isinstance(module, nn.MultiheadAttention), f"Found attention at {name}"
 
     def test_weight_tying(self, model_config):
         """When tie_weights=True, embedding and output head share weights."""
@@ -115,10 +121,18 @@ class TestArchitectureConstraints:
     def test_no_weight_tying(self):
         """When tie_weights=False, weights are independent."""
         config = USNConfig(
-            num_layers=2, d_model=32, d_s=16, k=4, d_ff=64,
-            vocab_size=100, max_seq_len=32, dropout=0.0,
-            embedding_dropout=0.0, residual_dropout=0.0,
-            tie_weights=False, fused=False,
+            num_layers=2,
+            d_model=32,
+            d_s=16,
+            k=4,
+            d_ff=64,
+            vocab_size=100,
+            max_seq_len=32,
+            dropout=0.0,
+            embedding_dropout=0.0,
+            residual_dropout=0.0,
+            tie_weights=False,
+            fused=False,
         )
         model = USNModel(config)
         emb_weight = model.embedding.embedding.weight

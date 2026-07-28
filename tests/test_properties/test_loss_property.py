@@ -1,5 +1,7 @@
 """Property 14: Cross-Entropy Loss Non-Negativity."""
+
 import torch
+
 from usn.losses.cross_entropy import USNCrossEntropyLoss
 
 

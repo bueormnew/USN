@@ -60,9 +60,7 @@ def test_micro_model_training():
     # Verify loss decreased
     history = result["loss_history"]
     assert len(history) >= 2, "Not enough loss history"
-    assert history[-1] < history[0], (
-        f"Loss did not decrease: {history[0]:.4f} → {history[-1]:.4f}"
-    )
+    assert history[-1] < history[0], f"Loss did not decrease: {history[0]:.4f} → {history[-1]:.4f}"
 
     # Verify gradients are non-zero during training
     model.train()
@@ -78,9 +76,7 @@ def test_micro_model_training():
     logits, _ = model(batch["input_ids"])
     loss = logits.sum()
     loss.backward()
-    total_grad_norm = sum(
-        p.grad.norm().item() for p in model.parameters() if p.grad is not None
-    )
+    total_grad_norm = sum(p.grad.norm().item() for p in model.parameters() if p.grad is not None)
     assert total_grad_norm > 0, "All gradients are zero"
 
     # Verify generation works

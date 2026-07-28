@@ -13,8 +13,8 @@ import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from usn.layers.parallel_scan import parallel_scan_semantic, parallel_scan_relational
 from usn.layers.chunked_scan import ChunkedParallelScan
+from usn.layers.parallel_scan import parallel_scan_relational, parallel_scan_semantic
 
 
 def sequential_scan_semantic(log_decays, values, s0):

@@ -318,7 +318,6 @@ def eager_state_core(
     """
     batch, chunk_len, d_model = m.shape
     k = R_init.shape[1]
-    d_s = s_init.shape[1]
     device = m.device
     dtype = m.dtype
 

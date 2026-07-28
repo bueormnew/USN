@@ -1,5 +1,7 @@
 """Property 11: RMSNorm Output Scale."""
+
 import torch
+
 from usn.layers.norm import RMSNorm
 
 

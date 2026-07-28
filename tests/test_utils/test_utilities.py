@@ -1,11 +1,11 @@
 """Tests for utility functions: count_parameters, set_seed, timer, memory_tracker."""
 
+import pytest
 import torch
 import torch.nn as nn
-import pytest
 
 from usn.utils import count_parameters, set_seed
-from usn.utils.timing import timer, memory_tracker, TimerResult, MemoryResult
+from usn.utils.timing import MemoryResult, TimerResult, memory_tracker, timer
 
 
 class TestCountParameters:
