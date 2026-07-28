@@ -1,0 +1,72 @@
+{
+  "config": "tiny",
+  "model_info": {
+    "num_parameters": 1059972,
+    "state_size_per_layer": 128,
+    "total_state_size": 512
+  },
+  "latency": {
+    "32": {
+      "avg_ms": 7.753,
+      "std_ms": 0.647,
+      "tokens_per_sec": 4127.4
+    },
+    "64": {
+      "avg_ms": 8.999,
+      "std_ms": 0.382,
+      "tokens_per_sec": 7111.7
+    },
+    "128": {
+      "avg_ms": 10.358,
+      "std_ms": 0.634,
+      "tokens_per_sec": 12357.0
+    },
+    "256": {
+      "avg_ms": 15.345,
+      "std_ms": 0.748,
+      "tokens_per_sec": 16683.2
+    }
+  },
+  "linearity": {
+    "ratios_ms_per_token": {
+      "32": 0.2423,
+      "64": 0.1406,
+      "128": 0.0809,
+      "256": 0.0599
+    },
+    "mean_ms_per_token": 0.1309,
+    "coefficient_of_variation": 0.5405,
+    "likely_linear": false
+  },
+  "memory": {
+    "param_memory_mb": 4.043,
+    "state_memory_bytes": 2048,
+    "state_memory_per_layer_floats": 128,
+    "total_parameters": 1059972
+  },
+  "parallel_vs_sequential": {
+    "32": {
+      "parallel_ms": 1.372,
+      "sequential_ms": 1.454,
+      "speedup": 1.06,
+      "max_diff": 0.0
+    },
+    "64": {
+      "parallel_ms": 2.719,
+      "sequential_ms": 3.165,
+      "speedup": 1.16,
+      "max_diff": 0.0
+    },
+    "128": {
+      "parallel_ms": 5.698,
+      "sequential_ms": 5.483,
+      "speedup": 0.96,
+      "max_diff": 0.0
+    }
+  },
+  "serialization": {
+    "save_ms": 28.0,
+    "load_ms": 39.4,
+    "file_size_mb": 4.056
+  }
+}

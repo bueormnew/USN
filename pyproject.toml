@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "USN"
+version = "0.1.0"
+description = "Unified State Network (USN) Architecture Library - A production-grade autoregressive sequence modeling architecture with O(n) training and O(1) inference."
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "BUEORM" }
+]
+requires-python = ">=3.10"
+keywords = ["deep-learning", "sequence-modeling", "state-space", "autoregressive", "parallel-scan"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "torch>=2.0.0",
+    "numpy>=1.24.0",
+    "tokenizers>=0.15.0",
+    "pyyaml>=6.0",
+    "tqdm>=4.60.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "mypy",
+    "ruff",
+    "pre-commit",
+    "hypothesis>=6.0",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+cuda = [
+    "triton>=2.1.0",
+]
+all = [
+    "USN[dev,docs,cuda]",
+]
+
+[project.scripts]
+usn = "usn.cli.main:cli"
+
+[project.urls]
+Homepage = "https://github.com/BUEORM/USN"
+Documentation = "https://github.com/BUEORM/USN/docs"
+Repository = "https://github.com/BUEORM/USN"
+
+[tool.setuptools.packages.find]
+include = ["usn*"]
+
+[tool.setuptools.package-data]
+usn = ["py.typed", "*.pyi"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow",
+    "gpu: marks tests requiring GPU",
+    "integration: marks integration tests",
+    "property: marks property-based tests",
+]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "D", "UP"]
+ignore = ["D100", "D104"]
