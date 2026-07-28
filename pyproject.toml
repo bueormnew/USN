@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "USN"
-version = "0.2.0"
+version = "0.3.0"
 description = "Unified State Network (USN) Architecture Library - A production-grade autoregressive sequence modeling architecture with O(n) training and O(1) inference."
 readme = "README.md"
 license = "MIT"
