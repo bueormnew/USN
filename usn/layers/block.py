@@ -77,7 +77,7 @@ _compiled_recurrence = _recurrence_loop
 if torch.cuda.is_available():
     try:
         _compiled_recurrence = torch.compile(
-            _recurrence_loop, mode="reduce-overhead", fullgraph=False
+            _recurrence_loop, mode="default", fullgraph=False
         )
     except Exception:
         _compiled_recurrence = _recurrence_loop
