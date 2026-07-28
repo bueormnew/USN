@@ -40,7 +40,7 @@ class TokenEmbedding(nn.Module):
     @property
     def weight(self) -> nn.Parameter:
         """Access embedding weight matrix (for weight tying)."""
-        return self.embedding.weight
+        return self.embedding.weight  # type: ignore[return-value]
 
     @weight.setter
     def weight(self, value: nn.Parameter) -> None:
@@ -97,7 +97,7 @@ class OutputHead(nn.Module):
     @property
     def weight(self) -> nn.Parameter:
         """Access output weight matrix (for weight tying)."""
-        return self.linear.weight
+        return self.linear.weight  # type: ignore[return-value]
 
     @weight.setter
     def weight(self, value: nn.Parameter) -> None:

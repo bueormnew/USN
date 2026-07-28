@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import warnings
 from dataclasses import asdict, dataclass, fields
-from typing import Literal
+from typing import Any, Literal
 
 from usn.exceptions import InvalidParameterError
 
@@ -248,7 +248,7 @@ class USNConfig:
         """Serialize configuration to a YAML string."""
         import yaml
 
-        return yaml.dump(asdict(self), default_flow_style=False, sort_keys=False)
+        return str(yaml.dump(asdict(self), default_flow_style=False, sort_keys=False))
 
     @classmethod
     def from_json(cls, json_str: str) -> USNConfig:
@@ -279,7 +279,7 @@ class USNConfig:
         return cls.from_dict(data)
 
     @classmethod
-    def from_dict(cls, d: dict) -> USNConfig:
+    def from_dict(cls, d: dict[str, Any]) -> USNConfig:
         """Create a USNConfig from a dictionary.
 
         Only keys that match valid USNConfig fields are used;

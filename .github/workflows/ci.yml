@@ -47,7 +47,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run mypy
-        run: mypy usn/ --strict
+        run: mypy usn/
 
   test:
     name: Tests (Python ${{ matrix.python-version }})

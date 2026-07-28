@@ -64,8 +64,8 @@ class USNWriter:
         tokenizer_data: bytes | None = None,
         compression: str = "none",
         metadata: dict[str, str] | None = None,
-        scheduler_state: dict | None = None,
-        training_state: dict | None = None,
+        scheduler_state: dict[str, Any] | None = None,
+        training_state: dict[str, Any] | None = None,
     ) -> None:
         """Save a model to a .usn file.
 
@@ -220,10 +220,8 @@ class USNWriter:
         """
         if tensor.dtype == torch.bfloat16:
             # bfloat16 is not supported by numpy, use raw storage bytes
-            storage = tensor.storage()
-            return bytes(
-                storage.untyped_storage()  # type: ignore[attr-defined]
-            )
+            storage = tensor.untyped_storage()
+            return bytes(storage)
         else:
             return tensor.numpy().tobytes()
 
@@ -313,7 +311,7 @@ class USNWriter:
                     result.append((section_type, data, 0))
             elif compression == Compression.LZ4:
                 try:
-                    import lz4.frame  # type: ignore[import-untyped]
+                    import lz4.frame
 
                     compressed = lz4.frame.compress(data)
                     if len(compressed) < len(data):

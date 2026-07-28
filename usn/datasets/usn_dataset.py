@@ -5,6 +5,7 @@ datasets that create causal LM pairs: input=tokens[:-1], target=tokens[1:].
 """
 
 import random
+from collections.abc import Iterable, Iterator
 
 import torch
 from torch import Tensor
@@ -13,7 +14,7 @@ from torch.utils.data import Dataset, IterableDataset
 from usn.core.interfaces import TokenizerInterface
 
 
-class USNDataset(Dataset):
+class USNDataset(Dataset[dict[str, Tensor]]):
     """Indexed dataset for causal language modeling.
 
     Tokenizes all data on initialization and stores in memory.
@@ -70,7 +71,7 @@ class USNDataset(Dataset):
         }
 
 
-class StreamingUSNDataset(IterableDataset):
+class StreamingUSNDataset(IterableDataset[dict[str, Tensor]]):
     """Streaming dataset for large corpora.
 
     Tokenizes text on the fly from an iterable source.
@@ -85,7 +86,7 @@ class StreamingUSNDataset(IterableDataset):
 
     def __init__(
         self,
-        data_source,
+        data_source: Iterable[str],
         tokenizer: TokenizerInterface,
         max_seq_len: int = 512,
         shuffle_buffer: int = 10000,
@@ -95,7 +96,7 @@ class StreamingUSNDataset(IterableDataset):
         self.max_seq_len = max_seq_len
         self.shuffle_buffer = shuffle_buffer
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[dict[str, Tensor]]:
         buffer: list[list[int]] = []
 
         for text in self.data_source:

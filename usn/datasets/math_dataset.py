@@ -13,7 +13,7 @@ from torch.utils.data import Dataset
 from usn.tokenizers.char_tokenizer import CharTokenizer
 
 
-class MathDataset(Dataset):
+class MathDataset(Dataset[dict[str, Tensor]]):
     """Synthetic arithmetic dataset for validation.
 
     Generates problems like "5+3=8", "12*7=84", "100-42=58".

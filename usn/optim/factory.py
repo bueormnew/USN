@@ -76,7 +76,7 @@ class OptimizerFactory:
             )
         elif optimizer_type in OptimizerFactory._registry:
             optimizer_cls = OptimizerFactory._registry[optimizer_type]
-            return optimizer_cls(
+            return optimizer_cls(  # type: ignore[call-arg]
                 param_groups,
                 lr=config.learning_rate,
                 weight_decay=config.weight_decay,

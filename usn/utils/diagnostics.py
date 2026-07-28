@@ -204,9 +204,9 @@ def activation_stats(
     stats: dict[str, dict[str, float]] = {}
     has_nan = False
     has_inf = False
-    hooks: list[torch.utils.hooks.RemovableHook] = []
+    hooks: list[Any] = []
 
-    def make_hook(name: str):
+    def make_hook(name: str) -> Any:
         def hook_fn(module: nn.Module, input: Any, output: Any) -> None:
             nonlocal has_nan, has_inf
             # Handle tuple outputs (take first tensor)
@@ -299,14 +299,14 @@ def check_state_health(
     # Get state from model
     state = None
     if hasattr(model, "get_state"):
-        state = model.get_state()
+        state = model.get_state()  # type: ignore[operator]
     elif hasattr(model, "_cached_state"):
         state = model._cached_state
 
     if state is None:
         # Try to generate initial state for basic check
         if hasattr(model, "get_initial_state"):
-            state = model.get_initial_state(batch_size=1)
+            state = model.get_initial_state(batch_size=1)  # type: ignore[operator]
             issues.append("No cached state — showing initial state health.")
         else:
             return StateHealthReport(

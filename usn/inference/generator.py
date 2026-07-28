@@ -127,7 +127,7 @@ class USNGenerator:
             for i in range(len(prompts)):
                 if finished[i]:
                     continue
-                tok = next_token[i].item()
+                tok = int(next_token[i].item())
                 if tok in stop_tokens:
                     finished[i] = True
                 else:
@@ -204,7 +204,7 @@ class USNGenerator:
             log_probs = F.log_softmax(logits, dim=-1)
             token_log_prob = log_probs.gather(1, next_token).item()
 
-            tok_id = next_token.item()
+            tok_id = int(next_token.item())
 
             # Check stop condition
             if tok_id in stop_tokens:
@@ -214,7 +214,7 @@ class USNGenerator:
             token_text = self.tokenizer.decode([tok_id])
 
             # Yield immediately — no buffering
-            yield (token_text, tok_id, token_log_prob)
+            yield (token_text, tok_id, float(token_log_prob))
 
             last_token = next_token
 
@@ -265,7 +265,7 @@ class USNGenerator:
             for tok in batch_tokens:
                 input_t = torch.tensor([[tok]], dtype=torch.long, device=self.device)
                 _, state = self.model(input_t, initial_state=state)
-        return state
+        return state  # type: ignore[return-value]
 
     def _apply_decode_strategy(
         self, logits: Tensor, temperature: float, top_k: int, top_p: float

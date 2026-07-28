@@ -11,6 +11,8 @@ for all positions simultaneously using the composition rule:
 For numerical stability, decay products are accumulated in log-space.
 """
 
+from typing import Any
+
 import torch
 from torch import Tensor
 
@@ -27,7 +29,7 @@ class ParallelScanFunction(torch.autograd.Function):
 
     @staticmethod
     def forward(
-        ctx,
+        ctx: Any,
         log_decays: Tensor,
         values: Tensor,
         initial_state: Tensor,
@@ -62,7 +64,9 @@ class ParallelScanFunction(torch.autograd.Function):
         return all_states
 
     @staticmethod
-    def backward(ctx, grad_output: Tensor) -> tuple[Tensor | None, Tensor | None, Tensor | None]:
+    def backward(
+        ctx: Any, grad_output: Tensor
+    ) -> tuple[Tensor | None, Tensor | None, Tensor | None]:
         """Compute gradients via reverse scan.
 
         The backward pass of a scan is itself a scan in reverse direction:
@@ -113,7 +117,7 @@ def parallel_scan_semantic(log_decays: Tensor, values: Tensor, initial_state: Te
     Returns:
         All states s_1..s_n (batch, seq, d_s).
     """
-    return ParallelScanFunction.apply(log_decays, values, initial_state)
+    return ParallelScanFunction.apply(log_decays, values, initial_state)  # type: ignore[no-any-return, no-untyped-call]
 
 
 def parallel_scan_relational(log_decays: Tensor, matrices: Tensor, initial_state: Tensor) -> Tensor:

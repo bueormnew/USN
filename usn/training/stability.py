@@ -109,5 +109,5 @@ def clip_state_norm(
     norm = torch.norm(state.float())
     if norm > max_norm:
         scale = max_norm / (norm + 1e-8)
-        return state * scale.to(state.dtype)
+        return (state * scale).to(state.dtype)
     return state

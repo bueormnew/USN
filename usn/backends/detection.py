@@ -51,7 +51,7 @@ class DeviceDetector:
                 gpu_name = None
             try:
                 props = torch.cuda.get_device_properties(0)
-                gpu_memory = props.total_mem
+                gpu_memory = props.total_memory
                 compute_capability = (props.major, props.minor)
             except Exception:
                 pass

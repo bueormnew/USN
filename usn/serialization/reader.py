@@ -129,7 +129,8 @@ class USNReader:
         data = self.load(path, sections=["config"])
         if "config" not in data:
             raise ValueError(f"No CONFIG section found in {path}")
-        return data["config"]
+        config: USNConfig = data["config"]
+        return config
 
     def load_metadata_only(self, path: str | Path) -> dict[str, Any]:
         """Load only the metadata section from a .usn file.
@@ -146,7 +147,8 @@ class USNReader:
         data = self.load(path, sections=["metadata"])
         if "metadata" not in data:
             raise ValueError(f"No METADATA section found in {path}")
-        return data["metadata"]
+        metadata: dict[str, Any] = data["metadata"]
+        return metadata
 
     def _verify_checksum(self, file_data: bytes) -> None:
         """Verify SHA-256 checksum of the file content.
@@ -256,7 +258,7 @@ class USNReader:
             decompressed = zlib.decompress(data)
         elif compression == Compression.LZ4:
             try:
-                import lz4.frame  # type: ignore[import-untyped]
+                import lz4.frame
 
                 decompressed = lz4.frame.decompress(data)
             except ImportError:
@@ -398,7 +400,7 @@ class USNReader:
         }
 
         np_dtype = np_dtype_map[dtype_str]
-        array = np.frombuffer(raw_bytes, dtype=np_dtype).reshape(shape)
+        array: np.ndarray[Any, Any] = np.frombuffer(raw_bytes, dtype=np_dtype).reshape(shape)
         tensor = torch.from_numpy(array.copy())
         return tensor
 

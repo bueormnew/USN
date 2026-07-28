@@ -106,20 +106,14 @@ class FormatMigrator:
             )
 
         if to_version > FORMAT_VERSION:
-            raise VersionError(
-                f"Cannot migrate to version {to_version}: "
-                f"maximum supported version is {FORMAT_VERSION}."
-            )
+            raise VersionError(to_version, FORMAT_VERSION)
 
         # Apply migrations sequentially
         current_data = data
         for version in range(from_version, to_version):
             key = (version, version + 1)
             if key not in self._migrations:
-                raise VersionError(
-                    f"No migration registered from version {version} to {version + 1}. "
-                    f"Cannot complete migration path from v{from_version} to v{to_version}."
-                )
+                raise VersionError(version, FORMAT_VERSION)
             migration_fn = self._migrations[key]
             current_data = migration_fn(current_data)
 

@@ -97,7 +97,7 @@ class FormatValidator:
                 "This is not a valid .usn file."
             )
 
-        version = struct.unpack_from("<I", header_bytes, 4)[0]
+        version: int = struct.unpack_from("<I", header_bytes, 4)[0]
         if version > FORMAT_VERSION:
             raise ValueError(
                 f"Unsupported format version: {version}. "

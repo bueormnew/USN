@@ -9,6 +9,7 @@ directly to the Level 4 (eager) implementations.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import torch
 
@@ -59,7 +60,7 @@ def _try_compile(fn):
             return fn
 
         # Wrap to catch lazy compilation failures at first call
-        def _safe_compiled(*args, **kwargs):
+        def _safe_compiled(*args: Any, **kwargs: Any) -> Any:
             try:
                 return compiled(*args, **kwargs)
             except Exception:
@@ -68,15 +69,15 @@ def _try_compile(fn):
                     getattr(fn, "__name__", str(fn)),
                 )
                 # Replace ourselves with the original to avoid repeated failures
-                _safe_compiled.__wrapped_fallback__ = True
+                _safe_compiled.__wrapped_fallback__ = True  # type: ignore[attr-defined]
                 return fn(*args, **kwargs)
 
         # Preserve metadata for introspection
         _safe_compiled.__name__ = getattr(fn, "__name__", "compiled_fn")
         _safe_compiled.__qualname__ = getattr(fn, "__qualname__", "compiled_fn")
         _safe_compiled.__doc__ = fn.__doc__
-        _safe_compiled.__wrapped__ = fn
-        _safe_compiled.__wrapped_fallback__ = False
+        _safe_compiled.__wrapped__ = fn  # type: ignore[attr-defined]
+        _safe_compiled.__wrapped_fallback__ = False  # type: ignore[attr-defined]
         return _safe_compiled
 
     return fn

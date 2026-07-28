@@ -21,7 +21,7 @@ class ConfigError(USNError):
 class InvalidParameterError(ConfigError):
     """A specific parameter has an invalid value or type."""
 
-    def __init__(self, param_name: str, value, valid_range: str = "") -> None:
+    def __init__(self, param_name: str, value: object, valid_range: str = "") -> None:
         self.param_name = param_name
         self.value = value
         self.valid_range = valid_range
@@ -34,7 +34,7 @@ class InvalidParameterError(ConfigError):
 class IncompatibleConfigError(ConfigError):
     """Cross-parameter constraint violation."""
 
-    def __init__(self, message: str, params: dict | None = None) -> None:
+    def __init__(self, message: str, params: dict[str, object] | None = None) -> None:
         self.params = params or {}
         super().__init__(message)
 
@@ -42,7 +42,9 @@ class IncompatibleConfigError(ConfigError):
 class ShapeError(USNError):
     """Tensor shape mismatch."""
 
-    def __init__(self, expected: tuple, actual: tuple, context: str = "") -> None:
+    def __init__(
+        self, expected: tuple[int, ...], actual: tuple[int, ...], context: str = ""
+    ) -> None:
         self.expected = expected
         self.actual = actual
         msg = f"Shape mismatch: expected {expected}, got {actual}"
