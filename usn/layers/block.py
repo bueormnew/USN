@@ -9,6 +9,7 @@ With pre-norm residual: output = x + block(norm(x))
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch import Tensor
 
 from usn.config.model_config import USNConfig
@@ -21,6 +22,65 @@ from usn.modules.selective_writing import SelectiveWriting
 from usn.modules.state_readout import StateReadout
 from usn.modules.state_update import StateUpdate
 from usn.modules.temporal_mixing import TemporalMixing
+
+
+def _recurrence_loop(
+    gate_from_input: Tensor,  # (batch, seq, d_s)
+    write_semantic: Tensor,   # (batch, seq, d_s)
+    outer_products: Tensor,   # (batch, seq, k, k)
+    lambda_t: Tensor,         # (batch, seq, d_s)
+    rho_t: Tensor,            # (batch, seq, 1)
+    s_init: Tensor,           # (batch, d_s)
+    R_init: Tensor,           # (batch, k, k)
+    U_g_weight: Tensor,       # (d_s, d_s + k²)
+    b_g: Tensor,              # (d_s,)
+    seq_len: int,
+    d_s: int,
+    k: int,
+) -> tuple[Tensor, Tensor]:
+    """Core sequential recurrence — designed to be compiled by torch.compile.
+
+    This function contains ONLY tensor operations (no Python objects, no
+    module calls, no NamedTuples) so torch.compile can fully trace and
+    optimize it into a single CUDA graph.
+    """
+    batch = s_init.shape[0]
+    device = s_init.device
+    dtype = s_init.dtype
+
+    all_s = torch.empty(batch, seq_len, d_s, device=device, dtype=dtype)
+    all_R = torch.empty(batch, seq_len, k, k, device=device, dtype=dtype)
+
+    s = s_init
+    R = R_init
+
+    for t in range(seq_len):
+        # Selective writing: g_t = σ(W_g m_t + U_g [s; vec(R)] + b_g)
+        R_flat = R.reshape(batch, k * k)
+        state_read = torch.cat([s, R_flat], dim=-1)
+        gate_from_state = F.linear(state_read, U_g_weight)
+        g_t = torch.sigmoid(gate_from_input[:, t, :] + gate_from_state + b_g)
+
+        # State update
+        s = lambda_t[:, t, :] * s + g_t * write_semantic[:, t, :]
+        R = rho_t[:, t, :].unsqueeze(-1) * R + outer_products[:, t, :, :]
+
+        all_s[:, t, :] = s
+        all_R[:, t, :, :] = R
+
+    return all_s, all_R
+
+
+# Try to compile the recurrence for massive speedup on GPU
+# Only compile on CUDA — on CPU the eager loop is fine
+_compiled_recurrence = _recurrence_loop
+if torch.cuda.is_available():
+    try:
+        _compiled_recurrence = torch.compile(
+            _recurrence_loop, mode="reduce-overhead", fullgraph=False
+        )
+    except Exception:
+        _compiled_recurrence = _recurrence_loop
 
 
 class USNBlock(nn.Module):
@@ -147,76 +207,37 @@ class USNBlock(nn.Module):
     ) -> tuple[Tensor, Tensor, UnifiedState]:
         """Fused selective writing + state update as per paper.
 
-        The paper requires g_t to depend on S_{t-1}. This means we must
-        compute the write gate and state update together in a sequential
-        loop, where each step reads from the actual previous state.
+        Uses torch.compile to JIT-compile the sequential recurrence into
+        an efficient CUDA kernel, eliminating Python loop overhead.
 
-        This is the CORRECT implementation per the paper's pseudocode:
+        Per paper pseudocode:
             For t = 1..n:
                 g_t = σ(W_g m_t + U_g read(S_{t-1}) + b_g)
                 s_t = λ_t ⊙ s_{t-1} + g_t ⊙ (B_s m_t)
                 R_t = ρ_t R_{t-1} + (B_r m_t)(C_r m_t)^T
-
-        Args:
-            m: Temporal mix (batch, seq, d_model).
-            lambda_t: Semantic decay (batch, seq, d_s).
-            rho_t: Relational decay (batch, seq, 1).
-            initial_state: Initial state S_0.
-
-        Returns:
-            all_s: All semantic states (batch, seq, d_s).
-            all_R: All relational states (batch, seq, k, k).
-            final_state: Last UnifiedState.
         """
         batch_size, seq_len, _ = m.shape
-        device = m.device
-        dtype = m.dtype
         d_s = self.config.d_s
         k = self.config.k
 
-        # Pre-compute projections (these don't depend on state)
-        write_semantic = self.state_update.B_s(m)  # (batch, seq, d_s)
-        left = self.state_update.B_r(m)  # (batch, seq, k)
-        right = self.state_update.C_r(m)  # (batch, seq, k)
+        # Pre-compute ALL input-dependent projections in parallel (batched GEMMs)
+        write_semantic = self.state_update.B_s(m)      # (batch, seq, d_s)
+        left = self.state_update.B_r(m)                # (batch, seq, k)
+        right = self.state_update.C_r(m)               # (batch, seq, k)
         outer_products = left.unsqueeze(-1) * right.unsqueeze(-2)  # (batch, seq, k, k)
+        gate_from_input = self.selective_write.gate_input_proj(m)   # (batch, seq, d_s)
 
-        # Pre-compute the input-dependent part of the gate: W_g m_t
-        gate_from_input = self.selective_write.gate_input_proj(m)  # (batch, seq, d_s)
+        # Run the compiled sequential recurrence
+        all_s, all_R = _compiled_recurrence(
+            gate_from_input, write_semantic, outer_products,
+            lambda_t, rho_t,
+            initial_state.semantic, initial_state.relational,
+            self.selective_write.gate_state_proj.weight,
+            self.selective_write.gate_bias,
+            seq_len, d_s, k,
+        )
 
-        # Allocate output
-        all_s = torch.empty(batch_size, seq_len, d_s, device=device, dtype=dtype)
-        all_R = torch.empty(batch_size, seq_len, k, k, device=device, dtype=dtype)
-
-        # Sequential loop: compute g_t from S_{t-1}, then update state
-        s_prev = initial_state.semantic  # (batch, d_s)
-        R_prev = initial_state.relational  # (batch, k, k)
-
-        for t in range(seq_len):
-            # ── Selective Writing: g_t depends on S_{t-1} ──
-            # read(S_{t-1}) = concat(s_{t-1}, vec(R_{t-1}))
-            R_flat = R_prev.flatten(start_dim=1)  # (batch, k²)
-            state_read = torch.cat([s_prev, R_flat], dim=-1)  # (batch, d_s + k²)
-
-            # U_g read(S_{t-1})
-            gate_from_state = self.selective_write.gate_state_proj(state_read)  # (batch, d_s)
-
-            # g_t = σ(W_g m_t + U_g read(S_{t-1}) + b_g)
-            g_t = torch.sigmoid(
-                gate_from_input[:, t, :] + gate_from_state + self.selective_write.gate_bias
-            )  # (batch, d_s)
-
-            # ── State Update ──
-            # s_t = λ_t ⊙ s_{t-1} + g_t ⊙ (B_s m_t)
-            s_t = lambda_t[:, t, :] * s_prev + g_t * write_semantic[:, t, :]
-
-            # R_t = ρ_t R_{t-1} + (B_r m_t)(C_r m_t)^T
-            R_t = rho_t[:, t, :].unsqueeze(-1) * R_prev + outer_products[:, t, :, :]
-
-            all_s[:, t, :] = s_t
-            all_R[:, t, :, :] = R_t
-
-            s_prev = s_t
-            R_prev = R_t
-
-        final_state = UnifiedState(semantic=s_prev, relational=R_prev, u_prev=u_last)
+        s_final = all_s[:, -1, :]
+        R_final = all_R[:, -1, :, :]
+        final_state = UnifiedState(semantic=s_final, relational=R_final, u_prev=u_last)
         return all_s, all_R, final_state
